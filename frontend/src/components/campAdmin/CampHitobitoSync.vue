@@ -16,10 +16,11 @@
             :href="eventUrl"
             target="_blank"
             rel="noopener noreferrer"
+            class="text-primary"
             data-testid="hitobito-event-link"
           >
             {{ $t('components.campAdmin.campHitobitoSync.openInProvider', { provider }) }}
-            <v-icon icon="mdi-open-in-new" size="small" />
+            <v-icon icon="mdi-open-in-new" size="x-small" />
           </a>
         </v-list-item-subtitle>
         <template #append>
