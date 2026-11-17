@@ -33,9 +33,6 @@ export function providerIconColor(provider) {
   return PROVIDER_ICON_COLORS[provider] ?? null
 }
 
-/**
- * Web page of the event in the Hitobito instance itself.
- */
 export function hitobitoEventWebUrl(provider, eventId) {
   const baseUrl = getEnv()[PROVIDER_URL_ENV_KEYS[provider]]
   if (!baseUrl) {
