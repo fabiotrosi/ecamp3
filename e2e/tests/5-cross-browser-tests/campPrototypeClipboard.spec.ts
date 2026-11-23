@@ -52,6 +52,61 @@ test.describe('camp prototype clipboard', { tag: '@mature' }, () => {
     expect(campPrototype).toBe(copiedCampUri)
   })
 
+  test('uses a typed manual URL when clipboard read fails', async ({
+    clipboardStub,
+    openCreateCampStep2,
+  }) => {
+    await clipboardStub.readFailure()
+    const createCampDialogStep2 = await openCreateCampStep2()
+    await createCampDialogStep2.selectOtherCampPrototype()
+    await createCampDialogStep2.grantClipboardRead()
+    await clipboardStub.expectReadSettled('rejected')
+    await createCampDialogStep2.closeClipboardInfoDialog()
+    await createCampDialogStep2.typeManualPrototypeUrl(copiedCampUrl)
+    await createCampDialogStep2.expectCopiedPrototype()
+
+    const { campPrototype } = await createCampDialogStep2.submit()
+    expect(campPrototype).toBe(copiedCampUri)
+  })
+
+  test('blocks creating a camp while the manual URL is not a camp', async ({
+    clipboardStub,
+    openCreateCampStep2,
+  }) => {
+    await clipboardStub.readFailure()
+    const createCampDialogStep2 = await openCreateCampStep2()
+    await createCampDialogStep2.selectOtherCampPrototype()
+    await createCampDialogStep2.grantClipboardRead()
+    await clipboardStub.expectReadSettled('rejected')
+    await createCampDialogStep2.closeClipboardInfoDialog()
+    await createCampDialogStep2.fillUnknownManualPrototypeUrl('000000000000')
+    await createCampDialogStep2.expectCreateCampBlocked()
+
+    await createCampDialogStep2.fillManualPrototypeUrl(copiedCampUrl)
+    await createCampDialogStep2.expectCopiedPrototype()
+    const { campPrototype } = await createCampDialogStep2.submit()
+    expect(campPrototype).toBe(copiedCampUri)
+  })
+
+  test('does not show clipboard text in the manual URL field', async ({
+    browserName,
+    clipboardStub,
+    openCreateCampStep2,
+  }) => {
+    //eslint-disable-next-line playwright/no-conditional-in-test
+    if (browserName !== 'chromium') {
+      // Only chromium supports clipboard read.
+      //eslint-disable-next-line
+      test.skip()
+    }
+
+    await clipboardStub.readText('not a camp link', 'granted')
+    const createCampDialogStep2 = await openCreateCampStep2()
+    await clipboardStub.expectReadSettled('resolved')
+    await createCampDialogStep2.selectOtherCampPrototype()
+    await createCampDialogStep2.expectManualPrototypeUrl('')
+  })
+
   test('submits a camp pasted with a pre-granted clipboard', async ({
     page,
     browserName,

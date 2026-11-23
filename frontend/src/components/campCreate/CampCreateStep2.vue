@@ -10,7 +10,7 @@
         :label="$t('entity.camp.prototype')"
         :menu-props="{ offsetY: true }"
         :skip-if-empty="false"
-        :vee-rules="{ required: true }"
+        :vee-rules="{ required: true, not_one_of: ['other'] }"
         data-testid="prototype-select"
         path="prototype"
         persistent-hint
@@ -22,7 +22,7 @@
       >
         <e-text-field
           ref="copyCampUrlInput"
-          v-model="copyCampUrl"
+          v-model="manualPrototypeUrl"
           :label="$t('components.campCreate.campCreateStep2.prototypeCampUrl')"
           :vee-rules="{ required: true }"
           class="flex-grow-1"
@@ -228,7 +228,7 @@ export default {
   emits: ['createCamp', 'previousStep'],
   setup({ camp }) {
     const localCamp = reactive(camp)
-    const copyCampUrl = ref('')
+    const manualPrototypeUrl = ref('')
     const selectedPrototypeValue = ref(null)
     let prototypePicked = false
     let loadingClipboardOnMount = false
@@ -261,11 +261,6 @@ export default {
       },
     })
 
-    const setClipboardEntityUrl = (url) => {
-      clipboard.setClipboardEntityUrl(url)
-      copyCampUrl.value = ''
-    }
-
     onMounted(() => {
       loadingClipboardOnMount = true
       clipboard.attemptLoadingEntityFromClipboard().finally(() => {
@@ -275,12 +270,11 @@ export default {
 
     return {
       ...clipboard,
-      setClipboardEntityUrl,
       markPrototypePicked: () => {
         prototypePicked = true
       },
       localCamp,
-      copyCampUrl,
+      manualPrototypeUrl,
       selectedPrototypeValue,
     }
   },
