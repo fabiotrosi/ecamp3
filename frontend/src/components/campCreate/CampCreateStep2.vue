@@ -21,12 +21,11 @@
       >
         <e-text-field
           ref="copyCampUrlInput"
-          v-model="copyCampUrl"
+          v-model="clipboardEntityUrl"
           :label="$t('components.campCreate.campCreateStep2.prototypeCampUrl')"
           :vee-rules="{ required: true }"
           class="flex-grow-1"
           path="campPrototypeUrl"
-          @update:model-value="setClipboardEntityUrl"
         />
         <ClipboardInfoDialog
           v-if="showClipboardPrompt"
@@ -227,7 +226,6 @@ export default {
   emits: ['createCamp', 'previousStep'],
   setup({ camp }) {
     const localCamp = reactive(camp)
-    const copyCampUrl = ref('')
     const selectedPrototypeValue = ref(null)
     watchEffect(() => {
       if (['other', 'none', '', null].includes(selectedPrototypeValue.value)) {
@@ -255,16 +253,9 @@ export default {
       },
     })
 
-    const setClipboardEntityUrl = (url) => {
-      clipboard.setClipboardEntityUrl(url)
-      copyCampUrl.value = ''
-    }
-
     return {
       ...clipboard,
-      setClipboardEntityUrl,
       localCamp,
-      copyCampUrl,
       selectedPrototypeValue,
     }
   },
