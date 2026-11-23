@@ -1,6 +1,7 @@
 import { expect } from '@playwright/test'
-import { grgrCampId } from '@/utils/constants'
+import { bipiUser, grgrCampId } from '@/utils/constants'
 import { test } from '@/utils/etest'
+import { API_ROOT_URL, login } from '@/utils/helpers'
 
 const copiedCampUrl = `http://localhost:3000/camps/${grgrCampId}/GRGR/dashboard`
 const copiedCampUri = `/camps/${grgrCampId}`
@@ -97,5 +98,36 @@ test.describe('camp prototype clipboard', { tag: '@mature' }, () => {
 
     const { campPrototype } = await createCampDialogStep2.submit()
     expect(campPrototype).toBe(copiedCampUri)
+  })
+
+  test('lists a copied official camp template only once', async ({
+    browserName,
+    clipboardStub,
+    openCreateCampStep2,
+    request,
+  }) => {
+    //eslint-disable-next-line playwright/no-conditional-in-test
+    if (browserName !== 'chromium') {
+      // Only chromium supports clipboard read.
+      //eslint-disable-next-line
+      test.skip()
+    }
+
+    await login(request, bipiUser)
+    const prototypesResponse = await request.get(
+      `${API_ROOT_URL}/camps?isPrototype=true`,
+      {
+        headers: { accept: 'application/hal+json' },
+      }
+    )
+    expect(prototypesResponse.ok()).toBe(true)
+    const [prototype] = (await prototypesResponse.json())._embedded.items
+    const prototypeUrl = `http://localhost:3000/camps/${prototype.id}/${prototype.shortTitle}/dashboard`
+
+    await clipboardStub.readText(prototypeUrl, 'granted')
+    const createCampDialogStep2 = await openCreateCampStep2()
+    await clipboardStub.expectReadSettled('resolved')
+    await createCampDialogStep2.expectSelectedPrototype(prototype.title)
+    await createCampDialogStep2.expectPrototypeOptionCount(prototype.title, 1)
   })
 })
