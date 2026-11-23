@@ -230,7 +230,7 @@ export default {
     const copyCampUrl = ref('')
     const selectedPrototypeValue = ref(null)
     watchEffect(() => {
-      if (['other', 'none', null].includes(selectedPrototypeValue.value)) {
+      if (['other', 'none', '', null].includes(selectedPrototypeValue.value)) {
         localCamp.campPrototype = null
       } else {
         localCamp.campPrototype = selectedPrototypeValue.value
@@ -348,9 +348,7 @@ export default {
     },
   },
   mounted() {
-    this.attemptLoadingEntityFromClipboard().then(() => {
-      this.localCamp.campPrototype = null
-    })
+    this.attemptLoadingEntityFromClipboard()
   },
   methods: { camelCase },
 }
