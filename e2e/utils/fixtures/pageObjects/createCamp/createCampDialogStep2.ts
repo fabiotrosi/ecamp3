@@ -96,6 +96,12 @@ export class CreateCampDialogStep2 {
   }
 
   @boxedStep
+  async typeManualPrototypeUrl(url: string) {
+    await this._manualPrototypeUrlField.pressSequentially(url)
+    return this
+  }
+
+  @boxedStep
   async expectSelectedPrototype(value: string) {
     await expect(this._prototypeSelect.locator).toContainText(value, { timeout: 30_000 })
     return this

@@ -26,7 +26,7 @@
           :vee-rules="{ required: true }"
           class="flex-grow-1"
           path="campPrototypeUrl"
-          @update:model-value="setClipboardEntityUrl"
+          @update:model-value="loadCampFromTypedUrl"
         />
         <ClipboardInfoDialog
           v-if="showClipboardPrompt"
@@ -192,7 +192,7 @@
   </Form>
 </template>
 <script>
-import { camelCase } from 'lodash-es'
+import { camelCase, debounce } from 'lodash-es'
 import { Form } from 'vee-validate'
 import ButtonAdd from '@/components/buttons/ButtonAdd.vue'
 import ButtonCancel from '@/components/buttons/ButtonCancel.vue'
@@ -203,7 +203,7 @@ import ClipboardInfoDialog from '@/components/generic/ClipboardInfoDialog.vue'
 import { useClipboardEntity } from '@/components/generic/useClipboardEntity.js'
 import router from '@/router.js'
 import { apiStore as api } from '@/plugins/store/index.js'
-import { reactive, ref, watchEffect } from 'vue'
+import { onBeforeUnmount, reactive, ref, watchEffect } from 'vue'
 
 export default {
   name: 'CampCreateStep2',
@@ -248,6 +248,7 @@ export default {
       },
       onEntityLoaded(entity) {
         selectedPrototypeValue.value = entity._meta.self
+        copyCampUrl.value = ''
       },
       onEntityLoadFailed() {
         // If "other" is selected, leave the selection as it is, so the user can try again
@@ -255,14 +256,13 @@ export default {
       },
     })
 
-    const setClipboardEntityUrl = (url) => {
-      clipboard.setClipboardEntityUrl(url)
-      copyCampUrl.value = ''
-    }
+    const DEBOUNCE_WAIT = 500
+    const loadCampFromTypedUrl = debounce(clipboard.setClipboardEntityUrl, DEBOUNCE_WAIT)
+    onBeforeUnmount(loadCampFromTypedUrl.cancel)
 
     return {
       ...clipboard,
-      setClipboardEntityUrl,
+      loadCampFromTypedUrl,
       localCamp,
       copyCampUrl,
       selectedPrototypeValue,
